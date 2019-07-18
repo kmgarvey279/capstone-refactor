@@ -5,15 +5,19 @@ export default (state = {}, action) => {
   const { value, id } = action;
 
   switch (action.type) {
-  case c.ADD_SQUARE:
-    newState = Object.assign({}, state, {
-      [id]: {
-        value: value,
-        id: id
-      }
-    });
-    return newState;
-
+    case 'ADD_SQUARE':
+        const { value, isYou, isEnemy, id } = action;
+        let newState = Object.assign({}, state, {
+          [id]: {
+            value: value,
+            isYou: isYou,
+            isEnemy: isEnemy,
+            id: id
+          }
+        });
+        return newState;
+    case 'NEXT_LEVEL':
+      return action.newLevelId    
   default:
     return state;
   }

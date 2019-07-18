@@ -17,7 +17,7 @@ function Square(props){
     <div onClick={() => {handleSavingSelectedSquare(props.squareId);}}>
       <style jsx>{`
       `}</style>
-      <h3>{props.value}</h3>
+      <h3>{props.value}{props.squareId}</h3>
     </div>
   );
 }
