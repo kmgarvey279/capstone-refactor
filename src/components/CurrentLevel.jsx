@@ -10,14 +10,13 @@ function CurrentLevel(props){
           columns: 10 auto;
           column-gap: 0px;
           width: 500px;
-          height: 700px;
+          height: 670px;
           max-width: 500px;
           min-width: 500px;
-          max-height: 700px;
-          min-height: 700px;
+          max-height: 670px;
+          min-height: 670px;
         }
         div#inner {
-          background-color: green;
           border: solid black 3px;
           width: 50px;
           max-width: 50px;
@@ -25,6 +24,7 @@ function CurrentLevel(props){
           height: 50px;
           max-height: 50px;
           min-width: 50px;
+          vertical-align: top;
           display: inline-block;
         }
       `}</style>
@@ -35,7 +35,8 @@ function CurrentLevel(props){
             isYou={square.isYou}
             isEnemy={square.isEnemy}
             key={squareId}
-            squareId={squareId}/>
+            squareId={squareId}
+            image={square.image}/>
         </div>;
       })}
     </div>

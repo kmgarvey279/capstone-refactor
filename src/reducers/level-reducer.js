@@ -3,7 +3,7 @@ import c from './../constants';
 export default (state = {}, action) => {
   let newState;
   let newSquare;
-  const { squareId, value, isYou, isEnemy} = action;
+  const { squareId, value, isYou, isEnemy, image} = action;
 
   switch (action.type) {
     case c.ADD_SQUARE:
@@ -12,7 +12,8 @@ export default (state = {}, action) => {
             squareId: squareId,
             value: value,
             isYou: isYou,
-            isEnemy: isEnemy
+            isEnemy: isEnemy,
+            image: image
           }
         });
         return newState;
