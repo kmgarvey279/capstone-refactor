@@ -2,22 +2,42 @@ import c from './../constants';
 
 export default (state = {}, action) => {
   let newState;
-  const { value, id } = action;
+  let newSquare;
+  const { squareId, value, isYou, isEnemy} = action;
 
   switch (action.type) {
-    case 'ADD_SQUARE':
-        const { value, isYou, isEnemy, id } = action;
-        let newState = Object.assign({}, state, {
-          [id]: {
+    case c.ADD_SQUARE:
+        newState = Object.assign({}, state, {
+          [squareId]: {
+            squareId: squareId,
             value: value,
             isYou: isYou,
-            isEnemy: isEnemy,
-            id: id
+            isEnemy: isEnemy
           }
         });
         return newState;
-    case 'NEXT_LEVEL':
-      return action.newLevelId    
+
+    case c.UPDATE_VALUE:
+      newSquare = Object.assign({}, state[id], {value});
+      newState = Object.assign({}, state, {
+        [id]: newSquare
+      });
+        return newState;
+
+    case c.UPDATE_ISYOU:
+      newSquare = Object.assign({}, state[id], {isYou});
+      newState = Object.assign({}, state, {
+        [id]: newSquare
+      });
+        return newState;
+
+    case c.UPDATE_ISENEMY:
+      newSquare = Object.assign({}, state[id], {isEnemy});
+      newState = Object.assign({}, state, {
+        [id]: newSquare
+      });
+        return newState;
+
   default:
     return state;
   }
