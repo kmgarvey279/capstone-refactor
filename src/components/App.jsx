@@ -1,7 +1,9 @@
 import React from "react";
 import CurrentLevel from "./CurrentLevel";
+import GameUI from "./GameUI";
 import Title from "./Title";
 import End from "./End";
+import Game from "./Game";
 import { Switch, Route, withRouter, Redirect, BrowserRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -10,7 +12,7 @@ import c from './../constants';
 import lava from '../assets/images/lava.png';
 import stairs from '../assets/images/stairs.png';
 import wall from '../assets/images/wall.jpeg';
-import empty from '../assets/images/empty.png';
+import empty from '../assets/images/tile.png';
 
 class App extends React.Component {
 
@@ -18,73 +20,34 @@ class App extends React.Component {
     super(props);
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.state = {
-      levelId: 0,
-      levelById : {
-        1:['0', 'F', '0', '0', '0', '0', '0', 'L', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', 'L', '0', '0',
-           '0', '0', '0', '0', 'E', '0', '0', 'L', 'L', '0',
-           'W', 'W', 'W', '0', '0', '0', '0', '0', 'L', '0',
-           '0', '0', 'W', '0', '0', '0', '0', '0', 'L', 'L',
-           '0', '0', 'W', '0', '0', '0', '0', '0', 'E', '0',
-           '0', '0', 'W', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', 'W', 'W', 'W', 'W', 'W', 'W', '0', '0',
-           '0', '0', 'E', '0', '0', '0', '0', 'W', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', 'W', '0', 'S'],
-           /////////////////////////////////////////////////
-        2:['0', 'E', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', 'S'],
-           /////////////////////////////////////////////////
-        3:['0', 'E', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-           '0', '0', '0', '0', '0', '0', '0', '0', '0', 'S']
-      },
-      playerHealth: 100,
-      playerIsAlive: true,
-      playerLocation: null
+      levelId : 0,
+      playerStats : {
+        playerHealth: 100,
+        playerWeapon: 'Flare Gun',
+        playerDirection: 's',
+        playerScore: 0
       }
     }
+  }
 
   componentDidMount() {
     document.addEventListener('keydown', this.handleKeyPress, false);
   }
 
   handleStartButtonClick() {
-    this.generateLevelFromTemplate(1);
+    this.generateLevelFromTemplate();
   }
 
 //Create Levels
-  nextLevel(levelId) {
-    this.state.currentLevel = null;
-    if (levelId < this.levelById.length) {
-      this.generateLevelFromTemplate();
-    } else {
-      this.props.history.push(`/end`)
-    }
-  }
   generateLevelFromTemplate(){
-    const { dispatch } = this.props;
     this.state.levelId += 1
-    let levelTemplate = this.state.levelById[this.state.levelId];
+    let levelTemplate = levelById[this.state.levelId];
     for(let i = 0; i < levelTemplate.length; i++){
       this.handleAddingSquareToLevel(i+1, levelTemplate[i]);
     }
     this.props.history.push("/game");
   }
+  
   handleAddingSquareToLevel(thisSquareId, squareValue) {
     let squareImage;
     let squareIsYou = false;
@@ -117,73 +80,88 @@ class App extends React.Component {
     dispatch(action);
   }
 
-  //up click:
-
-
   handleKeyPress(event){
+    //move up
     if(event.keyCode === 38){
-      console.log('up')
-    }
-    if(event.keyCode === 40){
-      console.log('down')
-    }
-    if(event.keyCode === 39){
-      console.log('right')
-    }
-    if(event.keyCode === 37){
-      console.log('left')
+      let originalLocation = this.getLocation();
+      let newLocation = originalLocation - 1;
+      if(newLocation > 0 && newLocation % 10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
+        this.updatePlayerLocation(originalLocation, false);
+        this.updatePlayerLocation(newLocation, true);
+        this.squareCheck(newLocation);
+      } else {
+        alert("blocked!")
+      }
+    //move down
+    } else if(event.keyCode === 40){
+      let originalLocation = this.getLocation();
+      let newLocation = originalLocation + 1;
+      if(newLocation %10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
+        this.updatePlayerLocation(originalLocation, false);
+        this.updatePlayerLocation(newLocation, true);
+        this.squareCheck(newLocation);
+      } else {
+        alert("blocked!")
+      }
+    //move right
+    } else if(event.keyCode === 39){
+      let originalLocation = this.getLocation();
+      let newLocation = originalLocation + 10;
+      if(newLocation <= 100 && this.props.currentLevel[newLocation].value !== 'W') {
+        this.updatePlayerLocation(originalLocation, false);
+        this.updatePlayerLocation(newLocation, true);
+        this.squareCheck(newLocation);
+      } else {
+        alert("blocked!")
+      }
+    //move left
+    } else if(event.keyCode === 37){
+      let originalLocation = this.getLocation();
+      let newLocation = originalLocation - 10;
+      if(newLocation > 0 && this.props.currentLevel[newLocation].value !== 'W') {
+        this.updatePlayerLocation(originalLocation, false);
+        this.updatePlayerLocation(newLocation, true);
+        this.squareCheck(newLocation);
+      } else {
+        alert("blocked!")
+      }
     }
   }
-
-  // handleUpClick() {
-  //   if(!squareId-1 <= 0 || !squareId-1 %10 === 0]) {
-  //     38
-  //     let newLocation = squareId--;
-  //     this.updatePlayerLocation(newLocation);
-  //   }
-  // }
-  // handledDownClick() {
-  //   if(!squareId %10 === 0]) {
-  //     40
-  //     let newLocation = squareId++;
-  //     this.updatePlayerLocation(newLocation);
-  //   }
-  // }
-  // handleRightClick() {
-  //   if(squareId + 10 < 100) {
-  //     39
-  //     let newLocation = squareId+= 10;
-  //     this.updatePlayerLocation(newLocation);
-  //   }
-  // }
-  // handleLeftClick() {
-  //   if(squareId - 10 > 0 ) {
-  //         37
-  //     let newLocation = squareId-= 10;
-  //     this.updatePlayerLocation(newLocation);
-  //   }
-  // }
-
-
-
-  //Move player position
-  updatePlayerLocation(squareId) {
-    this.state.playerLocation = squareId;
-    const {dispatch} = this.props;
+    
+  getLocation() {
+    for(let i=1; i <= 100; i++){
+      if(this.props.currentLevel[i].isYou == true) {
+        return i
+      }
+    }
+  }
+  
+  updatePlayerLocation(squareIdToUpdate, newBool) {
+    const { dispatch } = this.props;
     const action = {
       type: c.UPDATE_ISYOU,
-      squareId: squareId
+      squareId: squareIdToUpdate,
+      isYou: newBool
     };
     dispatch(action);
   }
-
+  
+  squareCheck(id) {
+    let location = this.props.currentLevel[id]; 
+    if (location.isYou && location.isEnemy || location.isYou && location.value == 'L') {
+      alert(this.state.playerStats.playerHealth);
+    }
+  }
 
   render(){
     return (
       <div>
           <Route exact path='/' render={()=><Title onStartClick={() => this.handleStartButtonClick()}/>} />
           <Route exact path='/end' render={()=><End />} />
-          <Route exact path='/game' render={()=><CurrentLevel currentLevel={this.props.currentLevel}/>} />
+          <Route exact path='/game' render={()=><Game
+            levelId={this.state.levelId} 
+            currentLevel={this.props.currentLevel}
+            playerStats={this.state.playerStats} />} />
       </div>
     );
   }
@@ -192,15 +170,50 @@ class App extends React.Component {
 App.propTypes = {
   currentLevel: PropTypes.object,
   levelId: PropTypes.number,
-  levelById: PropTypes.object
+  playerStats: PropTypes.object
 };
 
 const mapStateToProps = state => {
   return {
     currentLevel: state.currentLevel,
     levelId: state.levelId,
-    levelById: state.levelById
+    playerStats: state.playerStats
   }
 };
 
 export default withRouter(connect(mapStateToProps)(App));
+
+const levelById = {
+  1:['F', '0', '0', '0', '0', '0', '0', 'L', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', 'L', '0', '0',
+     '0', '0', '0', '0', 'E', '0', '0', 'L', 'L', '0',
+     'W', 'W', 'W', '0', '0', '0', '0', '0', 'L', '0',
+     '0', '0', 'W', '0', '0', '0', '0', '0', 'L', 'L',
+     '0', '0', 'W', '0', '0', '0', '0', '0', 'E', '0',
+     '0', '0', 'W', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', 'W', 'W', 'W', 'W', 'W', 'W', '0', '0',
+     '0', '0', 'E', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', 'W', '0', 'S'],
+     /////////////////////////////////////////////////
+  2:['0', 'E', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', 'S'],
+     /////////////////////////////////////////////////
+  3:['0', 'E', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', 'S']
+};

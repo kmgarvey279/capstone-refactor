@@ -7,14 +7,12 @@ function CurrentLevel(props){
     <div id="outer">
       <style jsx>{`
         div#outer {
+          margin-left: auto;
+          margin-right: auto;
           columns: 10 auto;
           column-gap: 0px;
           width: 500px;
-          height: 670px;
-          max-width: 500px;
-          min-width: 500px;
-          max-height: 670px;
-          min-height: 670px;
+          height: 560px;
         }
         div#inner {
           border: solid black 3px;
@@ -30,7 +28,6 @@ function CurrentLevel(props){
       `}</style>
       {Object.keys(props.currentLevel).map(function(squareId) {
         var square = props.currentLevel[squareId];
-        console.log(square)
         return <div id="inner"><Square value={square.value}
             isYou={square.isYou}
             isEnemy={square.isEnemy}
@@ -44,7 +41,7 @@ function CurrentLevel(props){
 }
 
 CurrentLevel.propTypes = {
-  currentLevel: PropTypes.object
+  currentLevel: PropTypes.object.isRequired
 };
 
 export default CurrentLevel;

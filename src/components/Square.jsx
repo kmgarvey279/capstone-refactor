@@ -5,7 +5,7 @@ import playerStand from '../assets/images/playerStand.png';
 import enemyStand from '../assets/images/enemyStand.png';
 
 function Square(props){
-
+  
   if (props.isYou == true) {
     return (
       <div>

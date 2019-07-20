@@ -1,18 +1,13 @@
-import c from './../constants';
-
-export default (state = {}, action) => {
-  let newState;
-  let newPlayer;
-  const { currentSquare, health, isAlive } = action;
-
-  switch (action.type) {
-    case c.UPDATE_LOCATION:
-      const newPlayer = Object.assign({}, state, {health});
-      newState = Object.assign({}, state, {
-        [1]: {
-          
-        }
-      })
-
-  }
-}
+// import c from './../constants';
+// 
+// export default (state = {}, action) => {
+//   let newState;
+//   const { health, weapon, direction, score } = action;
+// 
+//   switch (action.type) {
+//     case c.INIT_PLAYER:
+//       newState = Object.assign({}, state, {
+//         player : {}
+//           health:
+//         }
+//       })
