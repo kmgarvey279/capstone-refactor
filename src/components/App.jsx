@@ -20,7 +20,6 @@ class App extends React.Component {
     super(props);
     this.handleKeyPress = this.handleKeyPress.bind(this);
     this.state = {
-      levelId : 0,
       playerStats : {
         playerHealth: 100,
         playerWeapon: 'Flare Gun',
@@ -36,12 +35,30 @@ class App extends React.Component {
 
   handleStartButtonClick() {
     this.generateLevelFromTemplate();
+    // this.startTimer = setInterval(() =>
+    //   this.timerActions(),
+    // 6000
+    // );
   }
-
+  
+  // timerActions() {
+  //   this.updateTimer(),
+  //   this.enemyMove()
+  // }
+  // 
+  // updateTimer() {
+  // 
+  // }
 //Create Levels
   generateLevelFromTemplate(){
-    this.state.levelId += 1
-    let levelTemplate = levelById[this.state.levelId];
+    alert(this.props.levelId)
+    const { dispatch } = this.props;
+    const action = {
+      type: c.LEVELID_UP
+    };
+    dispatch(action);
+    alert(this.props.levelId)
+    let levelTemplate = levelById[this.props.levelId];
     for(let i = 0; i < levelTemplate.length; i++){
       this.handleAddingSquareToLevel(i+1, levelTemplate[i]);
     }
@@ -159,7 +176,7 @@ class App extends React.Component {
           <Route exact path='/' render={()=><Title onStartClick={() => this.handleStartButtonClick()}/>} />
           <Route exact path='/end' render={()=><End />} />
           <Route exact path='/game' render={()=><Game
-            levelId={this.state.levelId} 
+            levelId={this.props.levelId} 
             currentLevel={this.props.currentLevel}
             playerStats={this.state.playerStats} />} />
       </div>

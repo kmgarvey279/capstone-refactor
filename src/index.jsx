@@ -7,6 +7,10 @@ import { createStore } from 'redux';
 import rootReducer from './reducers/index';
 import { Provider } from 'react-redux';
 
+// const initialState = {
+//   playerStats: {playerHealth: 100, playerWeapon: 'Flare Gun', playerDirection: 'S', playerScore: 0}
+// };
+
 const store = createStore(rootReducer);
 
 let unsubscribe = store.subscribe(() =>

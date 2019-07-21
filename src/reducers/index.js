@@ -1,9 +1,11 @@
 import levelReducer from './level-reducer';
-// import playerReducer from './player-reducer';
+import levelIdReducer from './level-id-reducer';
+import playerReducer from './player-reducer';
 import { combineReducers } from 'redux';
 
 const rootReducer = combineReducers({
-  // playerStats: playerReducer,
+  playerStats: playerReducer,
+  levelId: levelIdReducer,
   currentLevel: levelReducer
 });
 
