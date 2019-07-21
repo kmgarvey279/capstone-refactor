@@ -1,13 +1,24 @@
-import c from './../constants';
+import constants from './../constants';
+const { initialState, types } = constants;
 
-export default (state = {}, action) => {
+const playerReducer = (state = initialState.playerStats, action) => {
   let newState;
-  const { playerHealth, playerWeapon, playerDirection, playerScore } = action;
-
+  const { newHealth, location} = action;
+  
   switch (action.type) {
-    case c.UPDATE_HEALTH:
+    case types.UPDATE_HEALTH:
+        newState = Object.assign({}, state, {
+          health: newHealth
+        });
+        return newState;
+    case types.UPDATE_LOCATION:
+        newState = Object.assign({}, state, {
+          location: location
+        });
         return newState;
   default:
     return state;
   }
 };
+
+export default playerReducer;

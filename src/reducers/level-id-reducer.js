@@ -1,16 +1,16 @@
-import c from './../constants';
+import constants from './../constants';
+const { initialState, types } = constants;
 
-export default (state = 1, action) => {
+const levelIdReducer = (state = initialState.levelId, action) => {
   let newState;
   switch (action.type) {
-    case c.LEVELID_UP:
+    case types.LEVELID_UP:
       newState = state + 1
       return newState;
-    // case c.LEVELID_DOWN:
-    //     return state - 1
-    // case c.LEVELID_RESET:
-    //     return 0
+    return state;
   default:
     return state;
   }
 };
+
+export default levelIdReducer;

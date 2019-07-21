@@ -1,12 +1,16 @@
-import c from './../constants';
+import constants from './../constants';
+const { types } = constants;
 
-export default (state = {}, action) => {
+const levelReducer = (state = {}, action) => {
   let newState;
   let newSquare;
   const { squareId, value, isYou, isEnemy, image} = action;
 
   switch (action.type) {
-    case c.ADD_SQUARE:
+    case types.NULL_LEVEL:
+      newState = {};    
+      return newState;
+    case types.ADD_SQUARE:
         newState = Object.assign({}, state, {
           [squareId]: {
             squareId: squareId,
@@ -23,7 +27,7 @@ export default (state = {}, action) => {
     //     [id]: newSquare
     //   });
     //     return newState;
-    case c.UPDATE_ISYOU:
+    case types.UPDATE_ISYOU:
       newSquare = Object.assign({}, state[squareId], {isYou});
       newState = Object.assign({}, state, {
         [squareId]: newSquare
@@ -40,3 +44,5 @@ export default (state = {}, action) => {
     return state;
   }
 };
+
+export default levelReducer;

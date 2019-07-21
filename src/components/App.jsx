@@ -7,7 +7,7 @@ import Game from "./Game";
 import { Switch, Route, withRouter, Redirect, BrowserRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import c from './../constants';
+import * as types from './../constants/ActionTypes';
 
 import lava from '../assets/images/lava.png';
 import stairs from '../assets/images/stairs.png';
@@ -19,14 +19,6 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.handleKeyPress = this.handleKeyPress.bind(this);
-    this.state = {
-      playerStats : {
-        playerHealth: 100,
-        playerWeapon: 'Flare Gun',
-        playerDirection: 's',
-        playerScore: 0
-      }
-    }
   }
 
   componentDidMount() {
@@ -35,6 +27,7 @@ class App extends React.Component {
 
   handleStartButtonClick() {
     this.generateLevelFromTemplate();
+    this.props.history.push("/game");
     // this.startTimer = setInterval(() =>
     //   this.timerActions(),
     // 6000
@@ -49,20 +42,20 @@ class App extends React.Component {
   // updateTimer() {
   // 
   // }
+  
 //Create Levels
   generateLevelFromTemplate(){
-    alert(this.props.levelId)
-    const { dispatch } = this.props;
+    const { dispatch } = this.props; 
     const action = {
-      type: c.LEVELID_UP
+      type: types.NULL_LEVEL
     };
     dispatch(action);
-    alert(this.props.levelId)
+    console.log("level:" + this.props.currentLevel)
     let levelTemplate = levelById[this.props.levelId];
+    console.log("leveltemplate:" + levelTemplate)
     for(let i = 0; i < levelTemplate.length; i++){
       this.handleAddingSquareToLevel(i+1, levelTemplate[i]);
     }
-    this.props.history.push("/game");
   }
   
   handleAddingSquareToLevel(thisSquareId, squareValue) {
@@ -83,11 +76,12 @@ class App extends React.Component {
       squareImage = <img src={empty} weight="50" height="50" />;
     }
     if (squareValue == 'S') {
+      this.updatePlayerLocation(thisSquareId);
       squareIsYou = true;
     }
-    const { dispatch } = this.props;
+    const { dispatch } = this.props; 
     const action = {
-      type: c.ADD_SQUARE,
+      type: types.ADD_SQUARE,
       squareId: thisSquareId,
       value: squareValue,
       isYou: squareIsYou,
@@ -100,63 +94,68 @@ class App extends React.Component {
   handleKeyPress(event){
     //move up
     if(event.keyCode === 38){
-      let originalLocation = this.getLocation();
+      let originalLocation = this.props.playerStats.location;
       let newLocation = originalLocation - 1;
       if(newLocation > 0 && newLocation % 10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
-        this.updatePlayerLocation(originalLocation, false);
-        this.updatePlayerLocation(newLocation, true);
+        this.updateSquareIsYou(originalLocation, false);
+        this.updateSquareIsYou(newLocation, true);
+        this.updatePlayerLocation(newLocation);
         this.squareCheck(newLocation);
       } else {
         alert("blocked!")
       }
     //move down
     } else if(event.keyCode === 40){
-      let originalLocation = this.getLocation();
+      let originalLocation = this.props.playerStats.location;
       let newLocation = originalLocation + 1;
       if(newLocation %10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
-        this.updatePlayerLocation(originalLocation, false);
-        this.updatePlayerLocation(newLocation, true);
+        this.updateSquareIsYou(originalLocation, false);
+        this.updateSquareIsYou(newLocation, true);
+        this.updatePlayerLocation(newLocation);
         this.squareCheck(newLocation);
       } else {
         alert("blocked!")
       }
     //move right
     } else if(event.keyCode === 39){
-      let originalLocation = this.getLocation();
+      let originalLocation = this.props.playerStats.location;
       let newLocation = originalLocation + 10;
       if(newLocation <= 100 && this.props.currentLevel[newLocation].value !== 'W') {
-        this.updatePlayerLocation(originalLocation, false);
-        this.updatePlayerLocation(newLocation, true);
+        this.updateSquareIsYou(originalLocation, false);
+        this.updateSquareIsYou(newLocation, true);
+        this.updatePlayerLocation(newLocation);
         this.squareCheck(newLocation);
       } else {
         alert("blocked!")
       }
     //move left
     } else if(event.keyCode === 37){
-      let originalLocation = this.getLocation();
+      let originalLocation = this.props.playerStats.location;
       let newLocation = originalLocation - 10;
       if(newLocation > 0 && this.props.currentLevel[newLocation].value !== 'W') {
-        this.updatePlayerLocation(originalLocation, false);
-        this.updatePlayerLocation(newLocation, true);
+        this.updateSquareIsYou(originalLocation, false);
+        this.updateSquareIsYou(newLocation, true);
+        this.updatePlayerLocation(newLocation);
         this.squareCheck(newLocation);
       } else {
         alert("blocked!")
       }
     }
   }
-    
-  getLocation() {
-    for(let i=1; i <= 100; i++){
-      if(this.props.currentLevel[i].isYou == true) {
-        return i
-      }
-    }
-  }
   
-  updatePlayerLocation(squareIdToUpdate, newBool) {
+  updatePlayerLocation(location) {
     const { dispatch } = this.props;
     const action = {
-      type: c.UPDATE_ISYOU,
+      type: types.UPDATE_LOCATION,
+      location: location
+    };
+    dispatch(action);
+  }
+  
+  updateSquareIsYou(squareIdToUpdate, newBool) {
+    const { dispatch } = this.props;
+    const action = {
+      type: types.UPDATE_ISYOU,
       squareId: squareIdToUpdate,
       isYou: newBool
     };
@@ -166,7 +165,18 @@ class App extends React.Component {
   squareCheck(id) {
     let location = this.props.currentLevel[id]; 
     if (location.isYou && location.isEnemy || location.isYou && location.value == 'L') {
-      alert(this.state.playerStats.playerHealth);
+      alert(this.props.playerStats.health);
+    } else if (location.isYou && location.value == 'F') {
+      alert("level complete");
+      alert(this.props.levelId);
+      const { dispatch } = this.props;
+      const action = {
+        type: types.LEVELID_UP,
+      };
+      dispatch(action);
+      alert(this.props.levelId);
+      this.updatePlayerLocation(id, false);
+      this.generateLevelFromTemplate();
     }
   }
 
@@ -178,7 +188,7 @@ class App extends React.Component {
           <Route exact path='/game' render={()=><Game
             levelId={this.props.levelId} 
             currentLevel={this.props.currentLevel}
-            playerStats={this.state.playerStats} />} />
+            playerStats={this.props.playerStats} />} />
       </div>
     );
   }
@@ -214,23 +224,23 @@ const levelById = {
      /////////////////////////////////////////////////
   2:['0', 'E', '0', '0', '0', '0', '0', '0', '0', '0',
      '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', 'L', 'L', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', 'L', '0', '0', '0', '0',
+     '0', '0', 'F', '0', '0', 'L', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', 'L', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', 'L', '0', '0', '0', '0',
+     '0', '0', '0', '0', 'L', 'L', '0', '0', '0', '0',
      '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', 'S'],
+     '0', '0', '0', '0', 'S', '0', '0', '0', '0', '0'],
      /////////////////////////////////////////////////
   3:['0', 'E', '0', '0', '0', '0', '0', '0', '0', '0',
      '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
      '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', '0', '0', '0', '0', '0', 'F', '0',
      '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', '0', 'W', 'W', 'W', 'W', 'W', 'W', 'W',
      '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
+     '0', '0', 'S', '0', '0', '0', '0', '0', '0', '0',
      '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', 'S']
+     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0']
 };
