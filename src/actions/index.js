@@ -1,11 +1,12 @@
 import * as types from "./../constants/ActionTypes";
+import { v4 } from 'uuid';
 //LEVEL
 export function nullLevel() {
   return {
     type: types.NULL_LEVEL,
   };
 }
-export function addSquare(newSquareId, newValue, newIsYou, newIsEnemy, newIsProjectile, newImage) {
+export function addSquare(newSquareId, newValue, newIsYou, newIsEnemy, newIsProjectile, newImage, newSprite) {
   return {
     type: types.ADD_SQUARE,
     squareId: newSquareId,
@@ -13,7 +14,8 @@ export function addSquare(newSquareId, newValue, newIsYou, newIsEnemy, newIsProj
     isYou: newIsYou,
     isEnemy: newIsEnemy,
     isProjectile: newIsProjectile,
-    image: newImage
+    tileImage: newImage,
+    sprite: newSprite
   };
 }
 export function updateIsYou(squareId, newBool) {
@@ -24,11 +26,24 @@ export function updateIsYou(squareId, newBool) {
   };
 }
 // export function updateIsEnemy()
-export function updateteIsProjectile(squareIdToUpdate, newBool) {
+export function updateIsProjectile(squareIdToUpdate, newBool) {
   return {
     type: types.UPDATE_ISPROJECTILE,
     squareId: squareIdToUpdate,
     isProjectile: newBool
+  };
+}
+export function updateSprite(squareIdToUpdate, newSprite) {
+  return {
+    type: types.UPDATE_SPRITE,
+    squareId: squareIdToUpdate,
+    sprite: newSprite
+  };
+}
+export function clearSprite(squareIdToUpdate) {
+  return {
+    type: types.NULL_SPRITE,
+    squareId: squareIdToUpdate
   };
 }
 
@@ -84,4 +99,16 @@ export function updatePlayerDirection(newDirection) {
     type: types.UPDATE_PLAYER_DIRECTION,
     direction: newDirection
   };
+}
+//ENEMY
+export function createEnemy(newKind, newSprites, newHealth, newMovePattern, newLocation) {
+  return {
+    type: types.CREATE_ENEMY,
+    enemyId: v4(),
+    kind: newKind,
+    sprites: newSprites,
+    health: newHealth,
+    location: newLocation,
+    direction: 'south'
+  }
 }

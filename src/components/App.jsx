@@ -7,6 +7,7 @@ import Game from "./Game";
 import { Switch, Route, withRouter, Redirect, BrowserRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import { v4 } from 'uuid';
 import * as types from './../constants/ActionTypes';
 import * as actions from './../actions';
 import lava from '../assets/images/lava.png';
@@ -21,23 +22,23 @@ class App extends React.Component {
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
 //Handle Input
-  componentDidMount() {
+  componentWillMount() {
     document.addEventListener('keydown', this.handleKeyPress, false);
   }
 
   handleKeyPress(event){
     //move up
     if(event.keyCode === 38){
-      this.move("N")
+      this.move("north")
     //move down
     } else if(event.keyCode === 40){
-      this.move("S")
+      this.move("south")
     //move right
     } else if (event.keyCode === 39){
-      this.move("E")
+      this.move("east")
     //move left
     } else if (event.keyCode === 37){
-      this.move("W")
+      this.move("west")
     //attack!
     } else if (event.keyCode === 32) {
       if(this.props.game.gameState == 'title') {
@@ -90,34 +91,41 @@ class App extends React.Component {
     let squareImage;
     let squareIsYou = false;
     let squareIsEnemy = false;
-    let squareIsProjectile = false
+    let squareIsProjectile = false;
+    let sprite = null;
     //Set tile image
     if (squareValue == 'F' || squareValue == 'S') {
-      squareImage = <img src={stairs} weight="50" height="50" />;
+      squareImage = <img id="tile" src={stairs} weight="50" height="50" />;
     } else if (squareValue == 'L') {
-      squareImage = <img src={lava} weight="50" height="50" />;
+      squareImage = <img id="tile" src={lava} weight="50" height="50" />;
     } else if (squareValue == 'W') {
-      squareImage = <img src={wall} weight="50" height="50" />;
-    } else if (squareValue == 'E') {
-      squareImage = <img src={empty} weight="50" height="50" />;
-      squareIsEnemy = true;
+      squareImage = <img id="tile" src={wall} weight="50" height="50" />;
     } else {
-      squareImage = <img src={empty} weight="50" height="50" />;
+      squareImage = <img id="tile" src={empty} weight="50" height="50" />;
     }
     if (squareValue == 'S') {
       this.handleUpdatePlayerLocation(thisSquareId);
+      sprite = this.props.player.sprites.north;
       squareIsYou = true;
     }
+    if (parseInt(squareValue) > 0) {
+      this.handleCreateNewEnemy(thisSquareId, parseInt(squareValue));
+      squareIsEnemy = true;
+    }
+    // else if (squareValue == 'E') {
+    //   this.handleUpdateEnemyLocation(thisSquareId);
+    //   squareIsEnemy = true;
+    // }
     const { dispatch } = this.props;
-    dispatch(actions.addSquare(thisSquareId, squareValue, squareIsYou, squareIsEnemy, squareIsProjectile, squareImage));
+    dispatch(actions.addSquare(thisSquareId, squareValue, squareIsYou, squareIsEnemy, squareIsProjectile, squareImage, sprite));
   }
 
 //Handle Movement
   move(direction){
     if (this.props.game.gameState === 'active') {
+      let originalLocation = this.props.player.location
       const { dispatch } = this.props;
       dispatch(actions.updatePlayerDirection(direction));
-      let originalLocation = this.props.player.location
       let canMove = this.attemptMove(direction, originalLocation)
       if (canMove !== originalLocation){
         this.handleUpdateSquareIsYou(originalLocation, false);
@@ -125,33 +133,34 @@ class App extends React.Component {
         this.handleUpdatePlayerLocation(canMove);
         this.squareCheck(canMove);
       }
+      this.handleUpdateSprite(originalLocation, canMove, 'player', direction);
     }
   }
 
   attemptMove(direction, originalLocation) {
     let newLocation;
-    if(direction == "N") {
+    if(direction == "north") {
       newLocation = originalLocation - 1;
       if(newLocation >= 0 && newLocation % 10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
         return newLocation;
       } else {
         return originalLocation;
       }
-    } else if (direction == "E") {
+    } else if (direction == "east") {
       newLocation = originalLocation + 10;
       if(newLocation <= 100 && this.props.currentLevel[newLocation].value !== 'W') {
         return newLocation;
       } else {
         return originalLocation;
       }
-    } else if (direction == "S") {
+    } else if (direction == "south") {
       newLocation = originalLocation + 1;
       if(newLocation > 0 && newLocation <= 100 && originalLocation % 10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
         return newLocation;
       } else {
         return originalLocation;
       }
-    } else if (direction == "W") {
+    } else if (direction == "west") {
       newLocation = originalLocation - 10;
       if(newLocation >= 0 && this.props.currentLevel[newLocation].value !== 'W') {
         return newLocation;
@@ -185,6 +194,33 @@ class App extends React.Component {
     }
   }
 
+  handleUpdateSprite(squareId, newSquareId, type, spriteId) {
+    let newSprite
+    if (type === 'player') {
+      newSprite = this.props.player.sprites[spriteId];
+    }
+    // else if (class === 'robot') {
+    //   newSprite = props.enemy.robot.sprites[spriteId]
+    // } else if (class === 'projectile') {
+    //   newSprite = props.projectile.sprites[spriteId]
+    // }
+    const { dispatch } = this.props;
+    dispatch(actions.updateSprite(squareId, ''));
+    dispatch(actions.updateSprite(newSquareId, newSprite));
+  }
+//Handle Enemies
+  handleCreateNewEnemy(locationId, enemyListId) {
+    let thisEnemy = this.props.enemyById(enemyListId);
+    let enemyId = v4();
+    const { dispatch } = this.props;
+    dispatch(actions.createEnemy(enemyId, thisEnemy.kind, thisEnemy.sprites, thisEnemy.health, thisEnemy.movePattern, location);
+    handleUpdateEnemyLocation(enemyId, locationId)
+  }
+
+  handleUpdatingEnemyLocation(enemyId, locationId) {
+    const { dispatch}
+  }
+
 //Handle Projectiles
   attack() {
     if (this.props.game.gameState === 'active' && this.props.projectile.location === undefined) {
@@ -201,16 +237,16 @@ class App extends React.Component {
     let location = this.props.player.location;
     let range = this.props.player.weapon.range;
     let target;
-    if (direction == 'N') {
+    if (direction == 'north') {
       location -= 1;
       target = location - (1 * range);
-    } else if (direction == 'E') {
+    } else if (direction == 'east') {
       location += 10;
       target = location + (10 * range);
-    } else if (direction == 'S') {
+    } else if (direction == 'south') {
       location += 1;
       target = location + (1 * range);
-    } else if (direction == 'W') {
+    } else if (direction == 'west') {
       location -= 10;
       target = location - (10 * range);
     }
@@ -242,7 +278,7 @@ class App extends React.Component {
 
   handleUpdateSquareIsProjectile(squareIdToUpdate, newBool) {
     const { dispatch } = this.props;
-    dispatch(actions.updateteIsProjectile(squareIdToUpdate, newBool));
+    dispatch(actions.updateIsProjectile(squareIdToUpdate, newBool));
   }
 
   render(){
