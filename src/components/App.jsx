@@ -20,28 +20,65 @@ class App extends React.Component {
     super(props);
     this.handleKeyPress = this.handleKeyPress.bind(this);
   }
-
+//Handle Input
   componentDidMount() {
     document.addEventListener('keydown', this.handleKeyPress, false);
   }
-
-  handleStartButtonClick() {
-    this.generateLevelFromTemplate();
-    this.props.history.push("/game");
-    // this.startTimer = setInterval(() =>
-    //   this.timerActions(),
-    // 6000
-    // );
+  
+  handleKeyPress(event){
+    //move up
+    if(event.keyCode === 38){
+      this.move("N")
+    //move down
+    } else if(event.keyCode === 40){
+      this.move("S")
+    //move right
+    } else if (event.keyCode === 39){
+      this.move("E")
+    //move left
+    } else if (event.keyCode === 37){
+      this.move("W")
+    //attack!
+    } else if (event.keyCode === 32) {
+      if(this.props.game.gameState == 'title') {
+        this.startGame();
+        this.props.history.push("/game");
+      } else if (this.props.game.gameState == 'active') {
+        this.attack();
+      }
+    //pause/unpause
+    } else if (event.keyCode === 13) {
+      if(this.props.game.gameState == 'title') {
+        this.startGame();
+      } else if (this.props.game.gameState == 'active' || this.props.game.gameState == 'paused') {
+        this.pauseGame();
+      }
+    }
   }
   
-  // timerActions() {
-  //   this.updateTimer(),
-  //   this.enemyMove()
-  // }
-  // 
-  // updateTimer() {
-  // 
-  // }
+//Change Level State
+  startGame(){
+    this.changeGameState('active')
+    this.generateLevelFromTemplate();
+    this.props.history.push("/game");  
+  }
+  
+  pauseGame(){
+    if (this.props.game.gameState == 'active') {
+      this.changeGameState('paused');
+    } else if (this.props.game.gameState == 'paused') {
+      this.changeGameState('active');
+    }
+  }
+  
+  changeGameState(newState){
+    const { dispatch } = this.props;
+    const action = {
+      type: types.CHANGE_GAMESTATE,
+      gameState: newState
+    };
+    dispatch(action);
+  }
   
 //Create Levels
   generateLevelFromTemplate(){
@@ -50,9 +87,7 @@ class App extends React.Component {
       type: types.NULL_LEVEL
     };
     dispatch(action);
-    console.log("level:" + this.props.currentLevel)
-    let levelTemplate = levelById[this.props.levelId];
-    console.log("leveltemplate:" + levelTemplate)
+    let levelTemplate = this.props.game.levelById[this.props.levelId];
     for(let i = 0; i < levelTemplate.length; i++){
       this.handleAddingSquareToLevel(i+1, levelTemplate[i]);
     }
@@ -86,59 +121,61 @@ class App extends React.Component {
       value: squareValue,
       isYou: squareIsYou,
       isEnemy: squareIsEnemy,
+      isProjectile: false, 
       image: squareImage
     };
     dispatch(action);
   }
 
-  handleKeyPress(event){
-    //move up
-    if(event.keyCode === 38){
-      let originalLocation = this.props.playerStats.location;
-      let newLocation = originalLocation - 1;
-      if(newLocation > 0 && newLocation % 10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
+//Handle Movement
+  move(direction){
+    if (this.props.game.gameState === 'active') {
+      const { dispatch } = this.props;
+      const action = {
+        type: types.UPDATE_PLAYER_DIRECTION,
+        direction: direction
+      };
+      dispatch(action);
+      let originalLocation = this.props.player.location
+      let canMove = this.attemptMove(direction, originalLocation)
+      if (canMove !== originalLocation){
         this.updateSquareIsYou(originalLocation, false);
-        this.updateSquareIsYou(newLocation, true);
-        this.updatePlayerLocation(newLocation);
-        this.squareCheck(newLocation);
-      } else {
-        alert("blocked!")
+        this.updateSquareIsYou(canMove, true);
+        this.updatePlayerLocation(canMove);
+        this.squareCheck(canMove);
       }
-    //move down
-    } else if(event.keyCode === 40){
-      let originalLocation = this.props.playerStats.location;
-      let newLocation = originalLocation + 1;
-      if(newLocation %10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
-        this.updateSquareIsYou(originalLocation, false);
-        this.updateSquareIsYou(newLocation, true);
-        this.updatePlayerLocation(newLocation);
-        this.squareCheck(newLocation);
+    }
+  }
+  
+  attemptMove(direction, originalLocation) {
+    let newLocation; 
+    if(direction == "N") {
+      newLocation = originalLocation - 1;
+      if(newLocation >= 0 && newLocation % 10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
+        return newLocation;
       } else {
-        alert("blocked!")
+        return originalLocation;
       }
-    //move right
-    } else if(event.keyCode === 39){
-      let originalLocation = this.props.playerStats.location;
-      let newLocation = originalLocation + 10;
+    } else if (direction == "E") {
+      newLocation = originalLocation + 10;
       if(newLocation <= 100 && this.props.currentLevel[newLocation].value !== 'W') {
-        this.updateSquareIsYou(originalLocation, false);
-        this.updateSquareIsYou(newLocation, true);
-        this.updatePlayerLocation(newLocation);
-        this.squareCheck(newLocation);
+        return newLocation;
       } else {
-        alert("blocked!")
+        return originalLocation;
       }
-    //move left
-    } else if(event.keyCode === 37){
-      let originalLocation = this.props.playerStats.location;
-      let newLocation = originalLocation - 10;
-      if(newLocation > 0 && this.props.currentLevel[newLocation].value !== 'W') {
-        this.updateSquareIsYou(originalLocation, false);
-        this.updateSquareIsYou(newLocation, true);
-        this.updatePlayerLocation(newLocation);
-        this.squareCheck(newLocation);
+    } else if (direction == "S") {
+      newLocation = originalLocation + 1;
+      if(newLocation > 0 && newLocation <= 100 && originalLocation % 10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
+        return newLocation;
       } else {
-        alert("blocked!")
+        return originalLocation;
+      }
+    } else if (direction == "W") {
+      newLocation = originalLocation - 10;
+      if(newLocation >= 0 && this.props.currentLevel[newLocation].value !== 'W') {
+        return newLocation;
+      } else {
+        return originalLocation;
       }
     }
   }
@@ -146,7 +183,7 @@ class App extends React.Component {
   updatePlayerLocation(location) {
     const { dispatch } = this.props;
     const action = {
-      type: types.UPDATE_LOCATION,
+      type: types.UPDATE_PLAYER_LOCATION,
       location: location
     };
     dispatch(action);
@@ -164,20 +201,98 @@ class App extends React.Component {
   
   squareCheck(id) {
     let location = this.props.currentLevel[id]; 
-    if (location.isYou && location.isEnemy || location.isYou && location.value == 'L') {
-      alert(this.props.playerStats.health);
+    if (location.isYou && location.isEnemy || location.isYou && location.value === 'L' || location.isYou && location.isProjectile === true) {
+      const action = {
+        type: types.UPDATE_PLAYER_HEALTH,
+        health: this.props.player.health -= 10
+      };
     } else if (location.isYou && location.value == 'F') {
-      alert("level complete");
-      alert(this.props.levelId);
       const { dispatch } = this.props;
       const action = {
         type: types.LEVELID_UP,
       };
       dispatch(action);
-      alert(this.props.levelId);
       this.updatePlayerLocation(id, false);
       this.generateLevelFromTemplate();
     }
+  }
+  
+//Handle Projectiles
+  attack() {
+    if (this.props.game.gameState === 'active' && this.props.projectile.location === undefined) {
+      this.createProjectile();
+      this.projectileTimer = setInterval(() =>
+        this.handleProjectile(),
+        200
+      );
+    }
+  }
+  
+  createProjectile() {
+    let direction = this.props.player.direction;
+    let location = this.props.player.location;
+    let range = this.props.player.weapon.range;
+    let target;
+    if (direction == 'N') {
+      location -= 1;
+      target = location - (1 * range);
+    } else if (direction == 'E') {
+      location += 10;
+      target = location + (10 * range);
+    } else if (direction == 'S') {
+      location += 1;
+      target = location + (1 * range);
+    } else if (direction == 'W') {
+      location -= 10;
+      target = location - (10 * range);
+    }
+    const { dispatch } = this.props; 
+    const action = {
+      type: types.CREATE_PROJECTILE,
+      direction: direction,
+      location: location,
+      target: target
+    };
+    dispatch(action);
+    this.updateSquareIsProjectile(location, true);
+  }
+  
+  handleProjectile() {
+    let location = this.props.projectile.location;
+    let direction = this.props.projectile.direction;
+    let newLocation = this.attemptMove(direction, location);
+    if (newLocation === location || newLocation === this.props.projectile.target) {
+      const { dispatch } = this.props;
+      const action = {
+        type: types.NULL_PROJECTILE,
+      };
+      dispatch(action);
+      clearInterval(this.projectileTimer)
+      this.updateSquareIsProjectile(location, false);
+    } else {
+      this.updateProjectileLocation(newLocation);
+      this.updateSquareIsProjectile(location, false);
+      this.updateSquareIsProjectile(newLocation, true);
+    }
+  }
+  
+  updateProjectileLocation(location) {
+    const { dispatch } = this.props;
+    const action = {
+      type: types.UPDATE_PROJECTILE_LOCATION,
+      location: location
+    };
+    dispatch(action);
+  }
+  
+  updateSquareIsProjectile(squareIdToUpdate, newBool) {
+    const { dispatch } = this.props;
+    const action = {
+      type: types.UPDATE_ISPROJECTILE,
+      squareId: squareIdToUpdate,
+      isProjectile: newBool
+    };
+    dispatch(action);
   }
 
   render(){
@@ -188,7 +303,9 @@ class App extends React.Component {
           <Route exact path='/game' render={()=><Game
             levelId={this.props.levelId} 
             currentLevel={this.props.currentLevel}
-            playerStats={this.props.playerStats} />} />
+            player={this.props.player}
+            projectile={this.props.projectile}
+            game={this.props.game} />} />
       </div>
     );
   }
@@ -197,50 +314,19 @@ class App extends React.Component {
 App.propTypes = {
   currentLevel: PropTypes.object,
   levelId: PropTypes.number,
-  playerStats: PropTypes.object
+  game: PropTypes.object,
+  player: PropTypes.object,
+  projectile: PropTypes.object
 };
 
 const mapStateToProps = state => {
   return {
     currentLevel: state.currentLevel,
     levelId: state.levelId,
-    playerStats: state.playerStats
+    game: state.game,
+    player: state.player,
+    projectile: state.projectile
   }
 };
 
 export default withRouter(connect(mapStateToProps)(App));
-
-const levelById = {
-  1:['F', '0', '0', '0', '0', '0', '0', 'L', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', 'L', '0', '0',
-     '0', '0', '0', '0', 'E', '0', '0', 'L', 'L', '0',
-     'W', 'W', 'W', '0', '0', '0', '0', '0', 'L', '0',
-     '0', '0', 'W', '0', '0', '0', '0', '0', 'L', 'L',
-     '0', '0', 'W', '0', '0', '0', '0', '0', 'E', '0',
-     '0', '0', 'W', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', 'W', 'W', 'W', 'W', 'W', 'W', '0', '0',
-     '0', '0', 'E', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', 'W', '0', 'S'],
-     /////////////////////////////////////////////////
-  2:['0', 'E', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', 'L', 'L', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', 'L', '0', '0', '0', '0',
-     '0', '0', 'F', '0', '0', 'L', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', 'L', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', 'L', '0', '0', '0', '0',
-     '0', '0', '0', '0', 'L', 'L', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', 'S', '0', '0', '0', '0', '0'],
-     /////////////////////////////////////////////////
-  3:['0', 'E', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', 'F', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', 'W', 'W', 'W', 'W', 'W', 'W', 'W',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', 'S', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0',
-     '0', '0', '0', '0', '0', '0', '0', '0', '0', '0']
-};

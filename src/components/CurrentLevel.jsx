@@ -31,9 +31,11 @@ function CurrentLevel(props){
         return <div id="inner"><Square value={square.value}
             isYou={square.isYou}
             isEnemy={square.isEnemy}
+            isProjectile={square.isProjectile}
             key={squareId}
             squareId={squareId}
-            image={square.image}/>
+            image={square.image}
+            player={props.player}/>
         </div>;
       })}
     </div>
@@ -41,7 +43,8 @@ function CurrentLevel(props){
 }
 
 CurrentLevel.propTypes = {
-  currentLevel: PropTypes.object.isRequired
+  currentLevel: PropTypes.object.isRequired,
+  player: PropTypes.object.isRequired 
 };
 
 export default CurrentLevel;

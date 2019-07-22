@@ -4,28 +4,51 @@ import CurrentLevel from './CurrentLevel';
 import GameUI from './GameUI';
 
 function Game(props){
-  return (
-    <div id="game">
-    <style jsx>{`
-      div#game {
-        text-align: center;
-        background-color: black;
-      }
-      `}</style>
-      <div>
-      <CurrentLevel currentLevel={props.currentLevel}/> 
+  if (props.game.gameState === 'paused') {
+    return (
+      <div id="game">
+      <style jsx>{`
+        div#game {
+          text-align: center;
+          background-color: black;
+          filter: gray;
+          -webkit-filter: grayscale(1);
+          filter: grayscale(1);
+        }
+        `}</style>
+        <div>
+        <CurrentLevel currentLevel={props.currentLevel} player={props.player}/> 
+        </div>
+        <div>
+        <GameUI game={props.game} player={props.player} levelId={props.levelId}/>
+        </div>
       </div>
-      <div>
-      <GameUI playerStats={props.playerStats} levelId={props.levelId}/>
+    );
+  } else {
+    return (
+      <div id="game">
+      <style jsx>{`
+        div#game {
+          text-align: center;
+          background-color: black;
+        }
+        `}</style>
+        <div>
+        <CurrentLevel player={props.player} currentLevel={props.currentLevel}/> 
+        </div>
+        <div>
+        <GameUI game={props.game} player={props.player} levelId={props.levelId}/>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 Game.propTypes = {
   levelId: PropTypes.number.isRequired,
   currentLevel: PropTypes.object.isRequired,
-  playerStats: PropTypes.object.isRequired
+  game: PropTypes.object.isRequired,
+  player: PropTypes.object.isRequired
 };
 
 export default Game;
