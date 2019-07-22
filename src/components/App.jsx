@@ -8,7 +8,7 @@ import { Switch, Route, withRouter, Redirect, BrowserRouter } from 'react-router
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import * as types from './../constants/ActionTypes';
-
+import * as actions from './../actions';
 import lava from '../assets/images/lava.png';
 import stairs from '../assets/images/stairs.png';
 import wall from '../assets/images/wall.jpeg';
@@ -24,7 +24,7 @@ class App extends React.Component {
   componentDidMount() {
     document.addEventListener('keydown', this.handleKeyPress, false);
   }
-  
+
   handleKeyPress(event){
     //move up
     if(event.keyCode === 38){
@@ -55,48 +55,42 @@ class App extends React.Component {
       }
     }
   }
-  
+
 //Change Level State
   startGame(){
-    this.changeGameState('active')
+    this.handleChangeGameState('active')
     this.generateLevelFromTemplate();
-    this.props.history.push("/game");  
+    this.props.history.push("/game");
   }
-  
+
   pauseGame(){
     if (this.props.game.gameState == 'active') {
-      this.changeGameState('paused');
+      this.handleChangeGameState('paused');
     } else if (this.props.game.gameState == 'paused') {
-      this.changeGameState('active');
+      this.handleChangeGameState('active');
     }
   }
-  
-  changeGameState(newState){
+
+  handleChangeGameState(newGameState){
     const { dispatch } = this.props;
-    const action = {
-      type: types.CHANGE_GAMESTATE,
-      gameState: newState
-    };
-    dispatch(action);
+    dispatch(actions.changeGameState(newGameState));
   }
-  
+
 //Create Levels
   generateLevelFromTemplate(){
-    const { dispatch } = this.props; 
-    const action = {
-      type: types.NULL_LEVEL
-    };
-    dispatch(action);
-    let levelTemplate = this.props.game.levelById[this.props.levelId];
+    const { dispatch } = this.props;
+    dispatch(actions.nullLevel());
+    let levelTemplate = this.props.game.levelById[this.props.game.levelId];
     for(let i = 0; i < levelTemplate.length; i++){
       this.handleAddingSquareToLevel(i+1, levelTemplate[i]);
     }
   }
-  
+
   handleAddingSquareToLevel(thisSquareId, squareValue) {
     let squareImage;
     let squareIsYou = false;
     let squareIsEnemy = false;
+    let squareIsProjectile = false
     //Set tile image
     if (squareValue == 'F' || squareValue == 'S') {
       squareImage = <img src={stairs} weight="50" height="50" />;
@@ -111,44 +105,31 @@ class App extends React.Component {
       squareImage = <img src={empty} weight="50" height="50" />;
     }
     if (squareValue == 'S') {
-      this.updatePlayerLocation(thisSquareId);
+      this.handleUpdatePlayerLocation(thisSquareId);
       squareIsYou = true;
     }
-    const { dispatch } = this.props; 
-    const action = {
-      type: types.ADD_SQUARE,
-      squareId: thisSquareId,
-      value: squareValue,
-      isYou: squareIsYou,
-      isEnemy: squareIsEnemy,
-      isProjectile: false, 
-      image: squareImage
-    };
-    dispatch(action);
+    const { dispatch } = this.props;
+    dispatch(actions.addSquare(thisSquareId, squareValue, squareIsYou, squareIsEnemy, squareIsProjectile, squareImage));
   }
 
 //Handle Movement
   move(direction){
     if (this.props.game.gameState === 'active') {
       const { dispatch } = this.props;
-      const action = {
-        type: types.UPDATE_PLAYER_DIRECTION,
-        direction: direction
-      };
-      dispatch(action);
+      dispatch(actions.updatePlayerDirection(direction));
       let originalLocation = this.props.player.location
       let canMove = this.attemptMove(direction, originalLocation)
       if (canMove !== originalLocation){
-        this.updateSquareIsYou(originalLocation, false);
-        this.updateSquareIsYou(canMove, true);
-        this.updatePlayerLocation(canMove);
+        this.handleUpdateSquareIsYou(originalLocation, false);
+        this.handleUpdateSquareIsYou(canMove, true);
+        this.handleUpdatePlayerLocation(canMove);
         this.squareCheck(canMove);
       }
     }
   }
-  
+
   attemptMove(direction, originalLocation) {
-    let newLocation; 
+    let newLocation;
     if(direction == "N") {
       newLocation = originalLocation - 1;
       if(newLocation >= 0 && newLocation % 10 !== 0 && this.props.currentLevel[newLocation].value !== 'W') {
@@ -179,56 +160,43 @@ class App extends React.Component {
       }
     }
   }
-  
-  updatePlayerLocation(location) {
+
+  handleUpdatePlayerLocation(location) {
     const { dispatch } = this.props;
-    const action = {
-      type: types.UPDATE_PLAYER_LOCATION,
-      location: location
-    };
-    dispatch(action);
+    dispatch(actions.updatePlayerLocation(location));
   }
-  
-  updateSquareIsYou(squareIdToUpdate, newBool) {
+
+  handleUpdateSquareIsYou(squareIdToUpdate, newBool) {
     const { dispatch } = this.props;
-    const action = {
-      type: types.UPDATE_ISYOU,
-      squareId: squareIdToUpdate,
-      isYou: newBool
-    };
-    dispatch(action);
+    dispatch(actions.updateIsYou(squareIdToUpdate, newBool));
   }
-  
+
   squareCheck(id) {
-    let location = this.props.currentLevel[id]; 
+    let location = this.props.currentLevel[id];
+    const { dispatch } = this.props;
     if (location.isYou && location.isEnemy || location.isYou && location.value === 'L' || location.isYou && location.isProjectile === true) {
-      const action = {
-        type: types.UPDATE_PLAYER_HEALTH,
-        health: this.props.player.health -= 10
-      };
+      let newHealth = this.props.player.health -= 10;
+      dispatch(actions.updatePlayerHealth(newHealth));
     } else if (location.isYou && location.value == 'F') {
-      const { dispatch } = this.props;
-      const action = {
-        type: types.LEVELID_UP,
-      };
-      dispatch(action);
-      this.updatePlayerLocation(id, false);
+      let newLevel = this.props.game.levelId++
+      dispatch(actions.levelIdUp(newLevel));
+      this.handleUpdatePlayerLocation(id, false);
       this.generateLevelFromTemplate();
     }
   }
-  
+
 //Handle Projectiles
   attack() {
     if (this.props.game.gameState === 'active' && this.props.projectile.location === undefined) {
-      this.createProjectile();
+      this.handleCreateProjectile();
       this.projectileTimer = setInterval(() =>
         this.handleProjectile(),
         200
       );
     }
   }
-  
-  createProjectile() {
+
+  handleCreateProjectile() {
     let direction = this.props.player.direction;
     let location = this.props.player.location;
     let range = this.props.player.weapon.range;
@@ -246,53 +214,35 @@ class App extends React.Component {
       location -= 10;
       target = location - (10 * range);
     }
-    const { dispatch } = this.props; 
-    const action = {
-      type: types.CREATE_PROJECTILE,
-      direction: direction,
-      location: location,
-      target: target
-    };
-    dispatch(action);
-    this.updateSquareIsProjectile(location, true);
+    const { dispatch } = this.props;
+    dispatch(actions.createProjectile(direction, location, target));
+    this.handleUpdateSquareIsProjectile(location, true);
   }
-  
+
   handleProjectile() {
     let location = this.props.projectile.location;
     let direction = this.props.projectile.direction;
     let newLocation = this.attemptMove(direction, location);
     if (newLocation === location || newLocation === this.props.projectile.target) {
       const { dispatch } = this.props;
-      const action = {
-        type: types.NULL_PROJECTILE,
-      };
-      dispatch(action);
+      dispatch(actions.nullProjectile());
       clearInterval(this.projectileTimer)
-      this.updateSquareIsProjectile(location, false);
+      this.handleUpdateSquareIsProjectile(location, false);
     } else {
-      this.updateProjectileLocation(newLocation);
-      this.updateSquareIsProjectile(location, false);
-      this.updateSquareIsProjectile(newLocation, true);
+      this.handleUpdateProjectileLocation(newLocation);
+      this.handleUpdateSquareIsProjectile(location, false);
+      this.handleUpdateSquareIsProjectile(newLocation, true);
     }
   }
-  
-  updateProjectileLocation(location) {
+
+  handleUpdateProjectileLocation(location) {
     const { dispatch } = this.props;
-    const action = {
-      type: types.UPDATE_PROJECTILE_LOCATION,
-      location: location
-    };
-    dispatch(action);
+    dispatch(actions.updateProjectileLocation(location));
   }
-  
-  updateSquareIsProjectile(squareIdToUpdate, newBool) {
+
+  handleUpdateSquareIsProjectile(squareIdToUpdate, newBool) {
     const { dispatch } = this.props;
-    const action = {
-      type: types.UPDATE_ISPROJECTILE,
-      squareId: squareIdToUpdate,
-      isProjectile: newBool
-    };
-    dispatch(action);
+    dispatch(actions.updateteIsProjectile(squareIdToUpdate, newBool));
   }
 
   render(){
@@ -301,7 +251,6 @@ class App extends React.Component {
           <Route exact path='/' render={()=><Title onStartClick={() => this.handleStartButtonClick()}/>} />
           <Route exact path='/end' render={()=><End />} />
           <Route exact path='/game' render={()=><Game
-            levelId={this.props.levelId} 
             currentLevel={this.props.currentLevel}
             player={this.props.player}
             projectile={this.props.projectile}
@@ -313,7 +262,6 @@ class App extends React.Component {
 
 App.propTypes = {
   currentLevel: PropTypes.object,
-  levelId: PropTypes.number,
   game: PropTypes.object,
   player: PropTypes.object,
   projectile: PropTypes.object
@@ -322,7 +270,6 @@ App.propTypes = {
 const mapStateToProps = state => {
   return {
     currentLevel: state.currentLevel,
-    levelId: state.levelId,
     game: state.game,
     player: state.player,
     projectile: state.projectile

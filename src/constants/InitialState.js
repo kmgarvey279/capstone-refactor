@@ -1,5 +1,3 @@
-import flare from '../assets/images/flare.png';
-
 const levels = {
   1:['0', '0', '0', '0', '0', '0', '0', 'L', '0', '0',
      'W', '0', '0', '0', '0', '0', '0', 'L', '0', '0',
@@ -36,7 +34,7 @@ const levels = {
 };
 
 const weapons = {
-  1: { 
+  1: {
     id: 1,
     name: 'Taser Gun',
     range: 2
@@ -56,14 +54,14 @@ const weapons = {
 const enemies = {};
 
 export const initialState = {
-  levelId: 1,
   game: {
+    levelId: 1,
     gameState: 'title',
     score: 0,
     weaponById: weapons,
     levelById: levels
   },
-  player: { 
+  player: {
     health: 100,
     weapon: weapons[1],
     direction: 'S',

@@ -17,10 +17,10 @@ function Game(props){
         }
         `}</style>
         <div>
-        <CurrentLevel currentLevel={props.currentLevel} player={props.player}/> 
+        <CurrentLevel currentLevel={props.currentLevel} player={props.player}/>
         </div>
         <div>
-        <GameUI game={props.game} player={props.player} levelId={props.levelId}/>
+        <GameUI game={props.game} player={props.player} levelId={props.game.levelId}/>
         </div>
       </div>
     );
@@ -34,10 +34,10 @@ function Game(props){
         }
         `}</style>
         <div>
-        <CurrentLevel player={props.player} currentLevel={props.currentLevel}/> 
+        <CurrentLevel player={props.player} currentLevel={props.currentLevel}/>
         </div>
         <div>
-        <GameUI game={props.game} player={props.player} levelId={props.levelId}/>
+        <GameUI game={props.game} player={props.player} levelId={props.game.levelId}/>
         </div>
       </div>
     );
@@ -45,7 +45,6 @@ function Game(props){
 }
 
 Game.propTypes = {
-  levelId: PropTypes.number.isRequired,
   currentLevel: PropTypes.object.isRequired,
   game: PropTypes.object.isRequired,
   player: PropTypes.object.isRequired
