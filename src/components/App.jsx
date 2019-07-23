@@ -62,10 +62,6 @@ class App extends React.Component {
   startGame(){
     this.handleChangeGameState('active')
     this.generateLevelFromTemplate();
-    this.enemyTimer = setInterval(() =>
-      this.enemyMove(),
-      6000
-    );
     this.props.history.push("/game");
   }
 
@@ -197,10 +193,10 @@ class App extends React.Component {
     const { dispatch } = this.props;
     if (location.isEnemy !== '' || location.isProjectile) {
       //take damage + knockback
-      alert("damage!")
       let newHealth = this.props.player.health -= 10;
       dispatch(actions.updatePlayerHealth(newHealth));
-      this.knockBack();
+      let knockBackDirection = this.reverseDirection(this.props.player.direction);
+      this.knockBack(knockBackDirection);
     } else if (location.isYou && location.value == 'F') {
       let newLevel = this.props.game.levelId++
       dispatch(actions.levelIdUp(newLevel));
@@ -210,24 +206,24 @@ class App extends React.Component {
       return 'moved';
     }
   }
+  reverseDirection(direction) {
+    if (direction == 'north') {
+      return 'south';
+    } else if (direction == 'south') {
+      return 'north';
+    } else if (direction == 'east') {
+      return 'west';
+    } else {
+      return 'east';
+    }
+  }
 
-  knockBack() {
-    alert("knockback!")
+  knockBack(knockBackDirection) {
     const { dispatch } = this.props;
     let location = this.props.player.location;
     let direction = this.props.player.direction;
-    let knockBackDirection;
     let newSprite = this.props.player.sprites.knockback[direction];
     dispatch(actions.updateSprite(location, newSprite));
-    if (direction == 'north') {
-      knockBackDirection = 'south';
-    } else if (direction == 'south') {
-      knockBackDirection = 'north';
-    } else if (direction == 'east') {
-      knockBackDirection = 'west';
-    } else {
-      knockBackDirection = 'east';
-    }
     let canMove = this.attemptMove(knockBackDirection, location)
     if (canMove !== location) {
       //null previous location
@@ -268,18 +264,20 @@ class App extends React.Component {
     console.log(thisEnemy)
     let enemyId = v4();
     const { dispatch } = this.props;
-    dispatch(actions.createEnemy(enemyId, thisEnemy.kind, thisEnemy.sprites, thisEnemy.health, location));
+    dispatch(actions.createEnemy(enemyId, thisEnemy.kind, thisEnemy.sprites, thisEnemy.health, locationId));
+    let enemyTimer = setInterval(() =>
+      this.enemyMove(enemyId),
+      1000
+    );
     return enemyId;
   }
 
   handleUpdatingEnemyLocation(enemyId, location, direction) {
-    alert("updatelocation")
     const { dispatch} = this.props;
     //update new square
     dispatch(actions.updateIsEnemy(location, enemyId));
     let newSprite = this.props.enemies[enemyId].sprites[direction];
     dispatch(actions.updateSprite(location, newSprite))
-    console.log("squares state: " + this.props.currentLevel[location].isEnemy)
     //update enemy location property to match
     dispatch(actions.updateEnemyLocation(enemyId, location));
   }
@@ -294,39 +292,43 @@ class App extends React.Component {
     dispatch(actions.updateEnemyLocation(enemyId, newHealth));
   }
 
-  enemyMove() {
-    let that = this;
-    Object.keys(this.props.enemies).map(function(enemyId) {
-      let enemy = that.props.enemies[enemyId];
-      if (enemy.kind === 'Slime') {
-        that.moveRandom(enemyId);
-      } else if (enemy.kind === 'Robot') {
-        that.moveVertical(enemyId);
-      } else if (enemy.kind === 'Alien') {
-        that.movePursue(enemyId);
-      }
-    });
+  enemyMove(enemyId) {
+    let enemy = this.props.enemies[enemyId];
+    if (enemy.kind === 'Slime') {
+      this.moveRandom(enemyId);
+    } else if (enemy.kind === 'Robot') {
+      this.moveVertical(enemyId);
+    } else if (enemy.kind === 'Alien') {
+      this.movePursue(enemyId);
+    }
   }
 
   moveRandom(enemyId) {
     let location = this.props.enemies[enemyId].location;
     let direction;
-    let rng = Math.floor(Math.random() * 4);
-    if (rng == 0) {
-      direction = 'north';
-    } else if (rng == 1) {
-      direction = 'south';
-    } else if (rng == 2) {
-      direction = 'east';
+    let playerNear = this.checkForPlayer(location)
+    if (playerNear !== false) {
+      direction = playerNear;
     } else {
-      direction = 'west'
+      let rng = Math.floor(Math.random() * 4);
+      if (rng == 0) {
+        direction = 'north';
+      } else if (rng == 1) {
+        direction = 'south';
+      } else if (rng == 2) {
+        direction = 'east';
+      } else {
+        direction = 'west'
+      }
     }
     let canMove = this.attemptMove(direction, location);
-    console.log("direction: " + direction + "location: " + location + "canMove" + canMove)
-    if (canMove !== location && this.currentLevel[canMove].isEnemy == '' && this.currentLevel[canMove].value !== 'L') {
-      alert("success")
+    if (canMove !== location && this.props.currentLevel[canMove].isEnemy == '' && this.props.currentLevel[canMove].value !== 'L') {
+      if (this.props.currentLevel[canMove].isYou) {
+        this.knockBack(direction);
+      }
+      const { dispatch} = this.props;
       dispatch(actions.updateSprite(location, ''));
-      dispatch(actions.updateIsYou(location, false));
+      dispatch(actions.updateIsEnemy(location, ''));
       this.handleUpdatingEnemyLocation(enemyId, canMove, direction);
     }
   }
@@ -335,6 +337,19 @@ class App extends React.Component {
   //
   // movePursue()
 
+  checkForPlayer(location) {
+    if (this.props.currentLevel[location - 1].isYou) {
+      return 'north';
+    } else if (this.props.currentLevel[location + 10].isYou) {
+      return 'east';
+    } else if (this.props.currentLevel[location + 1].isYou) {
+      return 'south';
+    } else if (this.props.currentLevel[location - 10].isYou) {
+      return 'west';
+    } else {
+      return false;
+    }
+  }
 
 //Handle Projectiles
   attack() {
