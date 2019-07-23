@@ -25,7 +25,15 @@ export function updateIsYou(squareId, newBool) {
     isYou: newBool
   };
 }
-// export function updateIsEnemy()
+
+export function updateIsEnemy(squareIdToUpdate, enemyId) {
+    return {
+      type: types.UPDATE_ISENEMY,
+      squareId: squareIdToUpdate,
+      isEnemy: enemyId
+    }
+}
+
 export function updateIsProjectile(squareIdToUpdate, newBool) {
   return {
     type: types.UPDATE_ISPROJECTILE,
@@ -112,3 +120,36 @@ export function createEnemy(newKind, newSprites, newHealth, newMovePattern, newL
     direction: 'south'
   }
 }
+
+export function updateEnemyLocation(enemyIdToUpdate, newLocation) {
+  return {
+    type: types.UPDATE_ENEMY_LOCATION,
+    enemyId: enemyIdToUpdate,
+    location: newLocation
+  }
+}
+
+export function updateEnemyDirection(enemyIdToUpdate, newDirection) {
+  return {
+    type: types.UPDATE_ENEMY_DIRECTION,
+    enemyId: enemyIdToUpdate,
+    direction: newDirection
+  }
+}
+
+export function updateEnemyHealth(enemyIdToUpdate, newHealth) {
+  return {
+    type: types.UPDATE_ENEMY_LOCATION,
+    enemyId: enemyIdToUpdate,
+    health: newHealth
+  }
+}
+
+export function nullEnemy(enemyIdToUpdate) {
+  return {
+    type: types.NULL_ENEMY,
+    enemyId: enemyIdToUpdate
+  }
+}
+
+

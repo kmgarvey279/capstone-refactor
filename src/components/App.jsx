@@ -218,7 +218,9 @@ class App extends React.Component {
   }
 
   handleUpdatingEnemyLocation(enemyId, locationId) {
-    const { dispatch}
+    const { dispatch} = this.props;
+    dispatch(actions.updateEnemyLocation(enemyId, locationId));
+    dispatch(actions.updateSquareIsEnemy(enemyId, locationId));
   }
 
 //Handle Projectiles

@@ -20,6 +20,29 @@ const enemyReducer = {state = {}, action} => {
         }
       });
       return newState;
+    case types.UPDATE_ENEMY_LOCATION:
+      newEnemy = Object.assign({}, state[enemyId], {location});
+      newState = Object.assign({}, state, {
+        [enemyId]: newEnemy;
+      });
+      return newState;
+    case types.UPDATE_ENEMY_DIRECTION:
+      newEnemy = Object.assign({}, state[enemyId], {direction});
+      newState = Object.assign({}, state, {
+        [enemyId]: newEnemy;
+      });
+      return newState;
+    case types.UPDATE_ENEMY_HEALTH:
+      newEnemy = Object.assign({}, state[enemyId], {health});
+      newState = Object.assign({}, state, {
+        [enemyId]: newEnemy;
+      });
+      return newState;
+    case types.NULL_ENEMY:
+      newState = Object.assign({}, state, {
+        [enemyId]: {}
+      })
+      return newState;
   default:
     return state;
   }
