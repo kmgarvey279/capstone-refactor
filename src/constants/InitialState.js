@@ -72,17 +72,27 @@ const playerSpriteList = {
 
 const enemySpriteList = {
   1: {
-    north: <img id="player" src={enemyStand} weight="50" height="50"/>,
-    east: <img id="player" src={enemyStand} weight="50" height="50"/>,
-    south: <img id="player" src={enemyStand} weight="50" height="50"/>,
-    west: <img id="player" src={enemyStand} weight="50" height="50"/>
+    move: {
+      north: <img id="player" src={enemyStand} weight="50" height="50"/>,
+      east: <img id="player" src={enemyStand} weight="50" height="50"/>,
+      south: <img id="player" src={enemyStand} weight="50" height="50"/>,
+      west: <img id="player" src={enemyStand} weight="50" height="50"/>
+    },
+    knockback: {
+      north: <img id="player" src={enemyStand} weight="50" height="50"/>,
+      east: <img id="player" src={enemyStand} weight="50" height="50"/>,
+      south: <img id="player" src={enemyStand} weight="50" height="50"/>,
+      west: <img id="player" src={enemyStand} weight="50" height="50"/>
+    }
   }
 }
 
 const weaponSpriteList = {
   1: {
-    vertical: <img id="player" src={flare} weight="50" height="50"/>,
-    horizontal: <img id="player" src={flare} weight="50" height="50"/>,
+    north: <img id="player" src={flare} weight="50" height="50"/>,
+    west: <img id="player" src={flare} weight="50" height="50"/>,
+    east: <img id="player" src={flare} weight="50" height="50"/>,
+    south: <img id="player" src={flare} weight="50" height="50"/>,
     burst: <img id="player" src={flare} weight="70" height="70"/>,
     icon: <img id="player" src={flare} weight="70" height="70"/>
   },
