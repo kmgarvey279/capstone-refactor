@@ -4,6 +4,8 @@ import CurrentLevel from './CurrentLevel';
 import GameUI from './GameUI';
 
 function Game(props){
+
+
   if (props.game.gameState === 'paused') {
     return (
       <div id="game">

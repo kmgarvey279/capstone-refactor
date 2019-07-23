@@ -20,6 +20,7 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.handleKeyPress = this.handleKeyPress.bind(this);
+    this.enemyMove = this.enemyMove.bind(this);
   }
 //Handle Input
   componentWillMount() {
@@ -61,6 +62,10 @@ class App extends React.Component {
   startGame(){
     this.handleChangeGameState('active')
     this.generateLevelFromTemplate();
+    this.enemyTimer = setInterval(() =>
+      this.enemyMove(),
+      6000
+    );
     this.props.history.push("/game");
   }
 
@@ -268,6 +273,7 @@ class App extends React.Component {
   }
 
   handleUpdatingEnemyLocation(enemyId, location, direction) {
+    alert("updatelocation")
     const { dispatch} = this.props;
     //update new square
     dispatch(actions.updateIsEnemy(location, enemyId));
@@ -287,6 +293,48 @@ class App extends React.Component {
     const { dispatch} = this.props;
     dispatch(actions.updateEnemyLocation(enemyId, newHealth));
   }
+
+  enemyMove() {
+    let that = this;
+    Object.keys(this.props.enemies).map(function(enemyId) {
+      let enemy = that.props.enemies[enemyId];
+      if (enemy.kind === 'Slime') {
+        that.moveRandom(enemyId);
+      } else if (enemy.kind === 'Robot') {
+        that.moveVertical(enemyId);
+      } else if (enemy.kind === 'Alien') {
+        that.movePursue(enemyId);
+      }
+    });
+  }
+
+  moveRandom(enemyId) {
+    let location = this.props.enemies[enemyId].location;
+    let direction;
+    let rng = Math.floor(Math.random() * 4);
+    if (rng == 0) {
+      direction = 'north';
+    } else if (rng == 1) {
+      direction = 'south';
+    } else if (rng == 2) {
+      direction = 'east';
+    } else {
+      direction = 'west'
+    }
+    let canMove = this.attemptMove(direction, location);
+    console.log("direction: " + direction + "location: " + location + "canMove" + canMove)
+    if (canMove !== location && this.currentLevel[canMove].isEnemy == '' && this.currentLevel[canMove].value !== 'L') {
+      alert("success")
+      dispatch(actions.updateSprite(location, ''));
+      dispatch(actions.updateIsYou(location, false));
+      this.handleUpdatingEnemyLocation(enemyId, canMove, direction);
+    }
+  }
+
+  // moveVertical()
+  //
+  // movePursue()
+
 
 //Handle Projectiles
   attack() {
