@@ -2,6 +2,7 @@ import levelReducer from './level-reducer';
 import gameReducer from './game-reducer';
 import playerReducer from './player-reducer';
 import projectileReducer from './projectile-reducer';
+import enemyReducer from './enemy-reducer';
 import { combineReducers } from 'redux';
 
 const rootReducer = combineReducers({

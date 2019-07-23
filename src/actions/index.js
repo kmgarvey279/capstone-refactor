@@ -48,13 +48,6 @@ export function updateSprite(squareIdToUpdate, newSprite) {
     sprite: newSprite
   };
 }
-export function clearSprite(squareIdToUpdate) {
-  return {
-    type: types.NULL_SPRITE,
-    squareId: squareIdToUpdate
-  };
-}
-
 // //GAME
 export function changeGameState(newGameState) {
   return {
@@ -73,7 +66,7 @@ export function levelIdUp(newLevelId) {
 export function createProjectile(newDirection, newLocation, newTarget) {
   return {
     type: types.CREATE_PROJECTILE,
-    direction: newdirection,
+    direction: newDirection,
     location: newLocation,
     target: newTarget
   };
@@ -108,11 +101,12 @@ export function updatePlayerDirection(newDirection) {
     direction: newDirection
   };
 }
+
 //ENEMY
-export function createEnemy(newKind, newSprites, newHealth, newMovePattern, newLocation) {
+export function createEnemy(enemyId, newKind, newSprites, newHealth, newLocation) {
   return {
     type: types.CREATE_ENEMY,
-    enemyId: v4(),
+    enemyId: enemyId,
     kind: newKind,
     sprites: newSprites,
     health: newHealth,
@@ -151,5 +145,3 @@ export function nullEnemy(enemyIdToUpdate) {
     enemyId: enemyIdToUpdate
   }
 }
-
-

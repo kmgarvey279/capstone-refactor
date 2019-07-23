@@ -10,7 +10,6 @@ function Square(props){
           z-index: 1;
           position: absolute;
         }
-
       `}</style>
       <div id="sprite">{props.sprite}</div>
       <div id="tile">{props.tileImage}</div>
@@ -21,11 +20,11 @@ function Square(props){
 Square.propTypes = {
   value: PropTypes.string.isRequired,
   isYou: PropTypes.bool.isRequired,
-  isEnemy: PropTypes.bool.isRequired,
+  isEnemy: PropTypes.string.isRequired,
   isProjectile: PropTypes.bool.isRequired,
   squareId: PropTypes.number.isRequired,
-  tileImage: PropTypes.string.isRequired,
-  sprite: PropTypes.string,
+  tileImage: PropTypes.object.isRequired,
+  sprite: PropTypes.object,
   player: PropTypes.object.isRequired
 };
 

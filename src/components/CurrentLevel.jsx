@@ -15,6 +15,8 @@ function CurrentLevel(props){
           height: 560px;
         }
         div#inner {
+          position: relative;
+          z-index: 0;
           border: solid black 3px;
           width: 50px;
           max-width: 50px;
@@ -33,7 +35,7 @@ function CurrentLevel(props){
             isEnemy={square.isEnemy}
             isProjectile={square.isProjectile}
             key={squareId}
-            squareId={squareId}
+            squareId={parseInt(squareId)}
             tileImage={square.tileImage}
             sprite={square.sprite}
             player={props.player}/>

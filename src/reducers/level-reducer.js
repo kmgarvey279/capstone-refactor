@@ -47,8 +47,8 @@ const levelReducer = (state = {}, action) => {
         [squareId]: newSquare
       });
         return newState;
-    case c.UPDATE_ISENEMY:
-      newSquare = Object.assign({}, state[id], {isEnemy});
+    case types.UPDATE_ISENEMY:
+      newSquare = Object.assign({}, state[squareId], {isEnemy});
       newState = Object.assign({}, state, {
         [squareId]: newSquare
       });
