@@ -20,7 +20,6 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.handleKeyPress = this.handleKeyPress.bind(this);
-    this.enemyMove = this.enemyMove.bind(this);
   }
 //Handle Input
   componentWillMount() {
@@ -242,31 +241,9 @@ class App extends React.Component {
     }
   }
 
-  // handleUpdatePlayerSprite(squareId, newSquareId, spriteId) {
-  //   const { dispatch } = this.props;
-  //   dispatch(actions.updateSprite(squareId, ''));
-  //   let newSprite = this.props.player.sprites[spriteId];
-  //   dispatch(actions.updateSprite(newSquareId, newSprite));
-  // }
-  //
-  // handleUpdateEnemySprite(squareId, newSquareId, enemyId, spriteId) {
-  //   const { dispatch } = this.props;
-  //   dispatch(actions.updateSprite(squareId, ''));
-  //   let newSprite = this.props.enemies[enemyId].sprites[spriteId];
-  //   dispatch(actions.updateSprite(newSquareId, newSprite));
-  // }
-  //
-  // handleUpdateProjectileSprite(squareId, newSquareId, spriteId) {
-  //   const { dispatch } = this.props;
-  //   dispatch(actions.updateSprite(squareId, ''));
-  //   let newSprite = this.player.weapon.sprites[spriteId];
-  //   dispatch(actions.updateSprite(newSquareId, newSprite));
-  // }
-
 //Handle Enemies
   handleCreateNewEnemy(locationId, enemyListId) {
     let thisEnemy = this.props.game.enemyById[enemyListId];
-    console.log(thisEnemy)
     let enemyId = v4();
     const { dispatch } = this.props;
     dispatch(actions.createEnemy(enemyId, thisEnemy.kind, thisEnemy.sprites, thisEnemy.health, locationId));
@@ -277,7 +254,7 @@ class App extends React.Component {
     return enemyId;
   }
 
-  handleUpdatingEnemyLocation(enemyId, location, direction) {
+  handleUpdateEnemyLocation(enemyId, location, direction) {
     const { dispatch} = this.props;
     //update new square
     dispatch(actions.updateIsEnemy(location, enemyId));
@@ -287,12 +264,12 @@ class App extends React.Component {
     dispatch(actions.updateEnemyLocation(enemyId, location));
   }
 
-  handleUpdatingEnemyDirection(enemyId, newDirection) {
+  handleUpdateEnemyDirection(enemyId, newDirection) {
     const { dispatch} = this.props;
     dispatch(actions.updateEnemyDirection(enemyId, newDirection));
   }
 
-  handleUpdatingEnemyHealth(enemyId, newHealth) {
+  handleUpdateEnemyHealth(enemyId, newHealth) {
     const { dispatch} = this.props;
     dispatch(actions.updateEnemyLocation(enemyId, newHealth));
   }
@@ -339,17 +316,16 @@ class App extends React.Component {
       const { dispatch} = this.props;
       dispatch(actions.updateSprite(location, ''));
       dispatch(actions.updateIsEnemy(location, ''));
-      this.handleUpdatingEnemyLocation(enemyId, canMove, direction);
+      this.handleUpdateEnemyLocation(enemyId, canMove, direction);
     }
   }
 
-  enemyKnockBack(knockBackDirection, enemyId) {
+  enemyKnockBack(location, knockBackDirection, enemyId) {
     const { dispatch } = this.props;
     //take damage
     let newHealth = this.props.enemies[enemyId].health -= 10;
     dispatch(actions.updateEnemyHealth(enemyId, newHealth));
     //handle knockback
-    let location = this.props.enemies[enemyId].location;
     let direction = this.props.enemies[enemyId].direction;
     let newSprite = this.props.enemies[enemyId].sprites.knockback[direction];
     dispatch(actions.updateSprite(location, newSprite));
@@ -431,7 +407,8 @@ class App extends React.Component {
       //if projectile stops or reaches its max range
       let enemyCheck = this.props.currentLevel[newLocation].isEnemy;
       if (enemyCheck !=='') {
-        this.enemyKnockBack(direction, enemyCheck);
+        alert("location: " + location + "direction" + direction + "enemyCheck" + enemyCheck )
+        this.enemyKnockBack(location, direction, enemyCheck);
       }
       if (newLocation === location || newLocation === this.props.projectile.target || enemyCheck !== '') {
         //null this projectile

@@ -25,7 +25,6 @@ Square.propTypes = {
   squareId: PropTypes.number.isRequired,
   tileImage: PropTypes.object.isRequired,
   sprite: PropTypes.object,
-  player: PropTypes.object.isRequired
 };
 
 export default connect()(Square);

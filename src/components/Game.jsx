@@ -18,10 +18,10 @@ function Game(props){
         }
         `}</style>
         <div>
-        <CurrentLevel currentLevel={props.currentLevel} player={props.player}/>
+        <CurrentLevel currentLevel={props.currentLevel}/>
         </div>
         <div>
-        <GameUI game={props.game} player={props.player} levelId={props.game.levelId}/>
+        <GameUI game={props.game} player={props.player}/>
         </div>
       </div>
     );
@@ -35,10 +35,10 @@ function Game(props){
         }
         `}</style>
         <div>
-        <CurrentLevel player={props.player} currentLevel={props.currentLevel}/>
+        <CurrentLevel currentLevel={props.currentLevel}/>
         </div>
         <div>
-        <GameUI game={props.game} player={props.player} levelId={props.game.levelId}/>
+        <GameUI game={props.game} player={props.player}/>
         </div>
       </div>
     );

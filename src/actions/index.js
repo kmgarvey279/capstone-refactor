@@ -133,7 +133,7 @@ export function updateEnemyDirection(enemyIdToUpdate, newDirection) {
 
 export function updateEnemyHealth(enemyIdToUpdate, newHealth) {
   return {
-    type: types.UPDATE_ENEMY_LOCATION,
+    type: types.UPDATE_ENEMY_HEALTH,
     enemyId: enemyIdToUpdate,
     health: newHealth
   }
