@@ -3,7 +3,7 @@ const { initialState, types } = constants;
 
 const gameReducer = (state = initialState.game, action) => {
   let newState;
-  const { gameState } = action;
+  const { gameState, levelId } = action;
 
   switch (action.type) {
     case types.CHANGE_GAMESTATE:
